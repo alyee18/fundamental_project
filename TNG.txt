@@ -1,0 +1,8 @@
+=== E-Wallet Balance ===
+RM 20.00
+
+=== Cards ===
+(No cards)
+
+=== Transaction History ===
+E-Wallet Reload | Reloaded to E-Wallet | RM 20.00
