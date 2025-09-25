@@ -1,17 +1,31 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <fstream>
 using namespace std;
 
+// ===== Shared Globals =====
 extern double balance;
-extern struct Transaction;
+extern const double MAX_BALANCE;
+struct Card {
+    string serial;
+    double balance;
+    Card(string s) : serial(s), balance(0.0) {}
+};
+extern vector<Card> cards;
+struct Transaction {
+    string type;
+    string detail;
+    double amount;
+};
 extern vector<Transaction> history;
 
-bool isAlphabetAndSpace(const string &str);
-bool isPhoneNumber(const string &str);
-bool isValidAmount(const string &str);
-void saveTNGToFile();
+void saveTNGToFile(); // from personB
+bool isAlphabetAndSpace(const string &str); // from personA
+bool isPhoneNumber(const string &str); // from personA
+bool isValidAmount(const string &str); // from personA
 
+// ===== Person D: Transfer =====
 void transferMoney() {
     string name, phone, desc, input;
     double amount;

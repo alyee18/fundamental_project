@@ -1,83 +1,74 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <fstream>
 using namespace std;
 
-extern double balance;
-extern const double MAX_BALANCE;
-extern struct Card;
-extern vector<Card> cards;
-extern struct Transaction;
-extern vector<Transaction> history;
-
-bool isValidAmount(const string &str);
-bool isNumberOnly(const string &str);
-void saveTNGToFile();
-
-void reloadEWallet() {
-    string input;
-    double amount;
-    while (true) {
-        cout << "Enter reload amount for E-Wallet (min 20, max 3000, up to 2 decimals): ";
-        getline(cin, input);
-        if (isValidAmount(input)) {
-            amount = stod(input);
-            if (amount >= 20 && amount <= 3000) break;
-        }
-        cout << "Invalid amount.\n";
-    }
-    if (balance + amount > MAX_BALANCE) {
-        cout << "Cannot exceed maximum E-Wallet balance RM 3000. Reload cancelled.\n";
-        return;
-    }
-    balance += amount;
-    cout << "E-Wallet successfully reloaded. New balance: RM " << fixed << setprecision(2) << balance << "\n";
-    history.push_back({"E-Wallet Reload", "Reloaded to E-Wallet", amount});
-    saveTNGToFile();
+// Helper function to check if a string contains only digits
+bool isNumberOnly(const string& s) {
+    return !s.empty() && s.find_first_not_of("0123456789") == string::npos;
 }
 
-void reloadCard() {
-    if (cards.empty()) { cout << "No cards available.\n"; return; }
-
-    string input; int cardChoice;
-    while(true){
-        cout << "\n--- Select Card to Reload ---\n";
-        for(size_t i=0;i<cards.size();i++)
-            cout << i+1 << ". Serial: " << cards[i].serial << " | Balance: RM " << fixed << setprecision(2) << cards[i].balance << "\n";
-        cout << "Enter card number (1-" << cards.size() << "): ";
-        getline(cin,input);
-        if(isNumberOnly(input)){
-            cardChoice = stoi(input);
-            if(cardChoice>=1 && cardChoice <= (int)cards.size()) break;
-        }
-        cout << "Invalid card selection.\n";
-    }
-
+// ===== Shared Globals =====
+extern double balance;
+extern const double MAX_BALANCE;
+struct Card {
+    string serial;
+    double balance;
+    Card(string s) : serial(s), balance(0.0) {}
+};
+extern vector<Card> cards;
+struct Transaction {
+    string type;
+    string detail;
     double amount;
+};
+extern vector<Transaction> history;
+
+// ===== Person B: Save & History =====
+void saveTNGToFile() {
+    ofstream file("TNG.txt");
+    if (!file) {
+        cout << "Error opening TNG.txt for saving.\n";
+        return;
+    }
+    file << "=== E-Wallet Balance ===\n";
+    file << "RM " << fixed << setprecision(2) << balance << "\n\n";
+
+    file << "=== Cards ===\n";
+    if(cards.empty()) file << "(No cards)\n";
+    else for(size_t i=0;i<cards.size();i++)
+        file << cards[i].serial << " | RM " << fixed << setprecision(2) << cards[i].balance << "\n";
+
+    file << "\n=== Transaction History ===\n";
+    if(history.empty()) file << "(No transactions yet)\n";
+    else for(size_t i=0;i<history.size();i++)
+        file << history[i].type << " | " << history[i].detail << " | RM " 
+             << fixed << setprecision(2) << history[i].amount << "\n";
+    file.close();
+}
+
+void showTransactionHistory() {
+    if(history.empty()){ cout<<"No transactions yet.\n"; return; }
+
+    int cat;
     while(true){
-        cout << "Enter reload amount for Card (min 20, max 3000, up to 2 decimals): ";
-        getline(cin,input);
-        if(isValidAmount(input)){
-            amount = stod(input);
-            if(amount>=20 && amount<=3000) break;
-        }
-        cout << "Invalid amount.\n";
+        cout<<"\n--- Transaction History ---\n";
+        cout<<"1. E-Wallet Reload\n2. Card Reload\n3. Payments (Transport & Retail)\n4. Transfer\n5. All\nEnter choice: ";
+        string input; getline(cin,input);
+        if(isNumberOnly(input)){ cat=stoi(input); if(cat>=1 && cat<=5) break; }
+        cout<<"Invalid input.\n";
     }
 
-    if(balance >= amount){
-        if(cards[cardChoice-1].balance + amount > MAX_BALANCE){
-            cout << "Cannot exceed maximum card balance RM 3000. Reload cancelled.\n";
-            return;
-        }
-        balance -= amount;
-        cards[cardChoice-1].balance += amount;
-        cout << "Card " << cards[cardChoice-1].serial << " reloaded with RM " 
-             << fixed << setprecision(2) << amount 
-             << ". Card balance: RM " << fixed << setprecision(2) << cards[cardChoice-1].balance
-             << ", E-Wallet balance: RM " << fixed << setprecision(2) << balance << "\n";
-        history.push_back({"Card Reload", "Card "+cards[cardChoice-1].serial, amount});
-        saveTNGToFile();
-    } else {
-        cout << "Not enough balance in E-Wallet.\n";
+    for(size_t i=0;i<history.size();i++){
+        bool show=false;
+        if(cat==1 && history[i].type=="E-Wallet Reload") show=true;
+        else if(cat==2 && history[i].type=="Card Reload") show=true;
+        else if(cat==3 && (history[i].type=="Transport Payment" || history[i].type=="Retail Payment")) show=true;
+        else if(cat==4 && history[i].type=="Transfer") show=true;
+        else if(cat==5) show=true;
+
+        if(show)
+            cout<<i+1<<". "<<history[i].type<<" | "<<history[i].detail<<" | RM "<<fixed<<setprecision(2)<<history[i].amount<<"\n";
     }
 }
