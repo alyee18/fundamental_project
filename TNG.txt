@@ -1,8 +1,15 @@
 === E-Wallet Balance ===
-RM 20.00
+RM 2017.09
 
 === Cards ===
-(No cards)
+0123456789 | RM 10.70
 
 === Transaction History ===
-E-Wallet Reload | Reloaded to E-Wallet | RM 20.00
+E-Wallet Reload | Reloaded to E-Wallet | RM 2098.99
+Card Reload | Card 0123456789 | RM 20.00
+Card Reload | Card 1234567890 | RM 20.99
+Transport Payment | Car using Card 0123456789 | RM 3.50
+Transport Payment | Taxi using Card 0123456789 | RM 2.30
+Retail Payment | Paid using E-Wallet | RM 20.02
+Transport Payment | Car using Card 0123456789 | RM 3.50
+Transfer | To ALYEE 0198725363 Reason: dinner fee | RM 20.89
